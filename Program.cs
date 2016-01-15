@@ -53,12 +53,13 @@ namespace Checkers {
             }
         }
         private const int BoardSize = 8; //Rows and columns. Always a square board.
-        private const int MaximumSequentialInvalidMoves = 4;
+        private const int MaximumSequentialInvalidMoves = 1;
+        private const bool EnabledInvalidMovesEnd = true;
         private static List<Tile> BotOneTiles = new List<Tile>() { Tile.RedChecker,Tile.KingedRedChecker };
         private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
         private static Tile[,] _Board = new Tile[BoardSize, BoardSize];
         private static Bot Bot1 = new Bots.Reggie();
-        private static Bot Bot2 = new Bots.Reggie();
+        private static Bot Bot2 = new Bots.Dave();
         private static CheckerBoard checkerBoard;
         private static void Main() {
             Console.Title = "Checkers";
@@ -211,7 +212,7 @@ namespace Checkers {
                     }
                 } else {
                     turnSkipped = true;
-                    Console.WriteLine($"Null move provided by Bot {whoseTurn}.");
+                    Console.WriteLine($"No move provided by Bot {whoseTurn}.");
                 }
                 if(turnSkipped) {
                     if(whoseTurn == 1) {
@@ -219,7 +220,6 @@ namespace Checkers {
                     } else {
                         botTwoInvalidMoves += 1;
                     }
-                    Console.WriteLine($"Turn {turn} skipped.");
                 } else {
                     if(whoseTurn == 1) {
                         botOneInvalidMoves = 0;
@@ -227,7 +227,9 @@ namespace Checkers {
                         botTwoInvalidMoves = 0;
                     }
                 }
-                tooManyInvalidMovesReached = botOneInvalidMoves >= MaximumSequentialInvalidMoves || botTwoInvalidMoves >= MaximumSequentialInvalidMoves;
+                if(EnabledInvalidMovesEnd) {
+                    tooManyInvalidMovesReached = botOneInvalidMoves >= MaximumSequentialInvalidMoves || botTwoInvalidMoves >= MaximumSequentialInvalidMoves;
+                }
                 turn += 1;
                 checkerBoard.UpdateBoard(_Board);
             }
@@ -256,8 +258,8 @@ namespace Checkers {
                         Console.WriteLine("Bot 2 has no more checkers.");
                     }
                     Console.WriteLine("Bot 1 wins!");
-                    Console.WriteLine($"Bot 2: {Bot2.LoseMessage()}");
-                    Console.WriteLine($"Bot 1: {Bot1.WinMessage()}");
+                    Console.WriteLine($"Bot 2 says: {Bot2.LoseMessage()}");
+                    Console.WriteLine($"Bot 1 says: {Bot1.WinMessage()}");
                     break;
                 case 2:
                     if(endedByFailure) {
@@ -266,8 +268,8 @@ namespace Checkers {
                         Console.WriteLine("Bot 1 has no more checkers.");
                     }
                     Console.WriteLine("Bot 2 wins!");
-                    Console.WriteLine($"Bot 1: {Bot2.LoseMessage()}");
-                    Console.WriteLine($"Bot 2: {Bot2.WinMessage()}");
+                    Console.WriteLine($"Bot 1 says: {Bot2.LoseMessage()}");
+                    Console.WriteLine($"Bot 2 says: {Bot2.WinMessage()}");
                     break;
             }
         }

@@ -45,17 +45,17 @@ namespace Checkers {
         LeftUp = 0, RightUp = 1, LeftDown = 2, RightDown = 3, LeftUpJump = 4, RightUpJump = 5, LeftDownJump = 6, RightDownJump = 7
     }
     public sealed class Program {
-        public const int BoardSize = 8; //Rows and columns. Always a square board.
-        private const int MaximumSequentialInvalidMoves = 4;
-        private static List<Tile> BotOneTiles = new List<Tile>() { Tile.RedChecker,Tile.KingedRedChecker };
-        private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
-        public static Tile Board(int x, int y) {
+        public static Tile Board(int x,int y) {
             try {
                 return _Board[x,y];
             } catch {
                 return Tile.White;
             }
         }
+        private const int BoardSize = 8; //Rows and columns. Always a square board.
+        private const int MaximumSequentialInvalidMoves = 4;
+        private static List<Tile> BotOneTiles = new List<Tile>() { Tile.RedChecker,Tile.KingedRedChecker };
+        private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
         private static Tile[,] _Board = new Tile[BoardSize, BoardSize];
         private static Bot Bot1 = new Bots.Reggie();
         private static Bot Bot2 = new Bots.Reggie();
@@ -102,8 +102,8 @@ namespace Checkers {
                     }
                 }
             }
-            Bot1.Setup(1);
-            Bot2.Setup(2);
+            Bot1.Setup(1,BoardSize);
+            Bot2.Setup(2,BoardSize);
             checkerBoard = new CheckerBoard(BoardSize);
             new Thread(RunCheckerBoard).Start();
             checkerBoard.UpdateBoard(_Board);

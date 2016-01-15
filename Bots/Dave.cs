@@ -1,7 +1,7 @@
 ﻿//This is Dave... Dave isn't very smart. He doesn't know how to play checkers so when it's his turn he does absolutely nothing.
 namespace Checkers.Bots {
     internal sealed class Dave : Bot {
-        public void Setup(int botNumber) {
+        public void Setup(int botNumber,int boardNumber) {
         }
         public Move Turn() {
             return null;

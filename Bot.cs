@@ -5,7 +5,7 @@ Oh and yeah again with the inconsistent and painful to read camel casing.
 */
 namespace Checkers {
     internal interface Bot {
-        void Setup(int botNumber); //This is really important if you wanna make your bot functional without trial and error.
+        void Setup(int botNumber,int boardSize); //This is important if you wanna make your bot functional without painful trial and error.
         Move Turn();
         string WinMessage();
         string LoseMessage();

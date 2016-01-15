@@ -2,8 +2,10 @@
     using System.Collections.Generic;
     internal sealed class Reggie:Bot {
         private bool IsBotOne;
+        private int BoardSize;
         private int TurnNumber = 0;
-        public void Setup(int botNumber) {
+        public void Setup(int botNumber,int boardSize) {
+            BoardSize = boardSize;
             switch(botNumber) {
                 case 1:
                     IsBotOne = true;
@@ -17,8 +19,8 @@
             TurnNumber += 1;
             List<MoveType> possibleMovesType = new List<MoveType>();
             List<Location> possibleMovesLocation = new List<Location>();
-            for(int y = 0;y < Program.BoardSize;y += 1) {
-                for(int x = 0;x < Program.BoardSize;x += 1) {
+            for(int y = 0;y < BoardSize;y += 1) {
+                for(int x = 0;x < BoardSize;x += 1) {
                     Location location = new Location(x,y);
                     Tile selectedTile = Program.Board(x,y);
                     MoveType? moveType = null;

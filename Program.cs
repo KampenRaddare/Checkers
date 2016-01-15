@@ -59,7 +59,7 @@ namespace Checkers {
         private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
         private static Tile[,] _Board = new Tile[BoardSize, BoardSize];
         private static Bot Bot1 = new Bots.Reggie();
-        private static Bot Bot2 = new Bots.Dave();
+        private static Bot Bot2 = new Bots.Reggie();
         private static CheckerBoard checkerBoard;
         private static void Main() {
             Console.Title = "Checkers";

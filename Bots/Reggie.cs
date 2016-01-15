@@ -10,6 +10,7 @@ DON'T HATE ME PLZ
 i need sleep
 */
 namespace Checkers.Bots {
+    using System.Collections.Generic;
     internal sealed class Reggie:Bot {
         private bool IsBotOne;
         private int TurnNumber = 0;
@@ -27,18 +28,18 @@ namespace Checkers.Bots {
             TurnNumber += 1;
             Location index = new Location(0,0);
             Location indexEnd = new Location(Program.BoardSize-1,Program.BoardSize-1);
+            List<MoveType> possibleMovesType = new List<MoveType>();
+            List<Location> possibleMovesLocation = new List<Location>();
             while(index != indexEnd) {
-                System.Console.ReadKey(true);
                 Location tempPiece = SelectPiece(index,indexEnd);
                 if(tempPiece == null) {
-                    System.Console.WriteLine("tempPieceNulled");
                     return null;
                 } else {
                     MoveType? moveType = SelectMove(tempPiece);
-                    index = tempPiece;
+                    //index = tempPiece;
                     if(moveType != null) {
-                        System.Console.WriteLine("Move not null.");
-                        return new Move(tempPiece,(MoveType)moveType);
+                        possibleMovesType.Add((MoveType)moveType);
+                        possibleMovesLocation.Add(tempPiece);
                     } else {
                         if(index.X < indexEnd.X) {
                             index.X += 1;
@@ -49,13 +50,35 @@ namespace Checkers.Bots {
                     }
                 }
             }
-            System.Console.WriteLine("RETURNED DEFAULT");
+            if(possibleMovesType.Count > 0) {
+                Move bestMove = null;
+                int indexOf = -1;
+                if(possibleMovesType.Contains(MoveType.LeftDownJump)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.LeftDownJump);
+                } else if(possibleMovesType.Contains(MoveType.RightDownJump)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.RightDownJump);
+                } else if(possibleMovesType.Contains(MoveType.LeftUpJump)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.LeftUpJump);
+                } else if(possibleMovesType.Contains(MoveType.RightUpJump)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.RightUpJump);
+                } else if(possibleMovesType.Contains(MoveType.RightDown)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.RightDown);
+                } else if(possibleMovesType.Contains(MoveType.LeftDown)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.LeftDown);
+                } else if(possibleMovesType.Contains(MoveType.LeftUp)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.LeftUp);
+                } else if(possibleMovesType.Contains(MoveType.RightUp)) {
+                    indexOf = possibleMovesType.IndexOf(MoveType.RightUp);
+                }
+                bestMove = new Move(possibleMovesLocation.ToArray()[indexOf],possibleMovesType.ToArray()[indexOf]);
+                return bestMove;
+            }
             return null;
         }
         private Location SelectPiece(Location startAt,Location endAt) {
             for(int y = startAt.Y;y < endAt.Y;y += 1) {
                 for(int x = startAt.X;x < endAt.X;x += 1) {
-                    Tile selectedTile = Program.Board[x,y];
+                    Tile selectedTile = Program.Board(x,y);
                     if(IsBotOne) {
                         switch(selectedTile) {
                             case Tile.RedChecker:
@@ -77,20 +100,60 @@ namespace Checkers.Bots {
         }
         private MoveType? SelectMove(Location piece) {
             MoveType? selectedMove = null;
-            switch(Program.Board[piece.X,piece.Y]) {
+            switch(Program.Board(piece.X,piece.Y)) {
                 case Tile.WhiteChecker:
-                    //setup movement selection
+                    if((Program.Board(piece.X + 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X + 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X + 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.RightUpJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X - 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftUpJump;
+                    } else if(Program.Board(piece.X - 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftUp;
+                    } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.RightUp;
+                    }
                     break;
                 case Tile.KingedWhiteChecker:
-                    //setup movement selection
+                    if((Program.Board(piece.X + 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X + 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X + 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.RightUpJump;
+                    } else if((Program.Board(piece.X + 1,piece.Y - 1) == Tile.RedChecker || Program.Board(piece.X + 1,piece.Y - 1) == Tile.KingedRedChecker) && Program.Board(piece.X + 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.RightDownJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X - 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftUpJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y - 1) == Tile.RedChecker || Program.Board(piece.X - 1,piece.Y - 1) == Tile.KingedRedChecker) && Program.Board(piece.X - 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftDownJump;
+                    } else if(Program.Board(piece.X - 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftUp;
+                    } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.RightUp;
+                    }
                     break;
                 case Tile.RedChecker:
-                    //setup movement selection
+                    if((Program.Board(piece.X + 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X + 1,piece.Y - 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X + 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.RightDownJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X - 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftDownJump;
+                    } else if(Program.Board(piece.X - 1,piece.Y - 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftDown;
+                    } else if(Program.Board(piece.X + 1,piece.Y - 1) == Tile.Black) {
+                        selectedMove = MoveType.RightDown;
+                    }
                     break;
                 case Tile.KingedRedChecker:
-                    //setup movement selection
+                    if((Program.Board(piece.X + 1,piece.Y + 1) == Tile.WhiteChecker || Program.Board(piece.X + 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X + 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.RightUpJump;
+                    } else if((Program.Board(piece.X + 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X + 1,piece.Y - 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X + 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.RightDownJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y + 1) == Tile.WhiteChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X - 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftUpJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X - 1,piece.Y - 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X - 2,piece.Y - 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftDownJump;
+                    } else if(Program.Board(piece.X - 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftUp;
+                    } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.RightUp;
+                    }
                     break;
-            } //If I tried to do that right now it would be about as good as throwing a cat at your checkers board
+            }
             if(selectedMove != null) {
                 if(Program.VerifyMove(new Move(piece,(MoveType)selectedMove),(IsBotOne ? 1 : 2))) {
                     return selectedMove;

@@ -48,9 +48,11 @@ namespace Checkers {
         private const bool PrintBoardEnabled = false;
         private static List<Tile> BotOneTiles = new List<Tile>() { Tile.RedChecker,Tile.KingedRedChecker };
         private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
-        public static Tile[,] Board { //Read only alias of _Board.
-            get {
-                return _Board;
+        public static Tile Board(int x, int y) {
+            try {
+                return _Board[x,y];
+            } catch {
+                return Tile.White;
             }
         }
         private static Tile[,] _Board = new Tile[BoardSize, BoardSize];

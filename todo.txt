@@ -1,0 +1,10 @@
+Add double jumping mechanics
+Add support for kings jumping and going back
+Add multiple language support
+Create defensive bot
+Enforce that if there's a capture the player must take it
+Add user input based "bot"
+Bot selection through user input
+Bot's in dll
+https://github.com/eihi/Checkers/blob/master/README.md has some good rules
+not much of an actual project or code, though..

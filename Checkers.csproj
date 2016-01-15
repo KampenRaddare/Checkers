@@ -63,23 +63,42 @@
   <PropertyGroup>
     <StartupObject>Checkers.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
     <Compile Include="Bots\Dave.cs" />
     <Compile Include="Bots\Reggie.cs" />
+    <Compile Include="CheckerBoard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CheckerBoardImages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CheckerBoardImages.resx</DependentUpon>
+    </Compile>
     <Compile Include="Location.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <EmbeddedResource Include="CheckerBoard.resx">
+      <DependentUpon>CheckerBoard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CheckerBoardImages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>CheckerBoardImages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6">
@@ -92,6 +111,27 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RedChecker.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WhiteCheckerKing.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RedCheckerKing.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WhiteChecker.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Black.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\White.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

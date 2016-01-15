@@ -35,6 +35,8 @@ Oh god.
 */
 namespace Checkers {
     using System;
+    using System.Threading;
+    using System.Windows.Forms;
     using System.Collections.Generic;
     public enum Tile {
         White = 0, Black = 1, WhiteChecker = 2, RedChecker = 3, KingedWhiteChecker = 4, KingedRedChecker = 5
@@ -44,8 +46,7 @@ namespace Checkers {
     }
     public sealed class Program {
         public const int BoardSize = 8; //Rows and columns. Always a square board.
-        public const int MaximumSequentialInvalidMoves = 4;
-        private const bool PrintBoardEnabled = false;
+        private const int MaximumSequentialInvalidMoves = 4;
         private static List<Tile> BotOneTiles = new List<Tile>() { Tile.RedChecker,Tile.KingedRedChecker };
         private static List<Tile> BotTwoTiles = new List<Tile>() { Tile.WhiteChecker,Tile.KingedWhiteChecker };
         public static Tile Board(int x, int y) {
@@ -57,67 +58,66 @@ namespace Checkers {
         }
         private static Tile[,] _Board = new Tile[BoardSize, BoardSize];
         private static Bot Bot1 = new Bots.Reggie();
-        private static Bot Bot2 = new Bots.Dave();
+        private static Bot Bot2 = new Bots.Reggie();
+        private static CheckerBoard checkerBoard;
         private static void Main() {
             Console.Title = "Checkers";
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
             if(Bot1 != null && Bot2 != null) {
                 Setup();
                 Console.WriteLine($"Setup complete.{Environment.NewLine}Press any key to start game.");
-                Console.ReadKey(true);
                 StartGame();
             } else {
                 Console.WriteLine("One or more bots are nulled.");
             }
             Console.WriteLine("Press any key to exit program.");
             Console.ReadKey(true);
+            Application.Exit();
         }
         private static void Setup() { //I think this needs more for loops.
             int tileNumber = 0;
-            for(int row = 0;row < BoardSize;row += 1) { //Setup black and white tiles
-                for(int column = 0;column < BoardSize;column += 1) {
+            for(int y = 0;y < BoardSize;y += 1) {
+                for(int x = 0;x < BoardSize;x += 1) {
                     if(IsOdd(tileNumber)) {
-                        _Board[row,column] = Tile.White;
+                        _Board[x,y] = Tile.White;
                     } else {
-                        _Board[row,column] = Tile.Black;
+                        _Board[x,y] = Tile.Black;
                     }
                     tileNumber += 1;
                 }
                 tileNumber += 1;
             }
-            for(int row = 0;row < 2;row += 1) { //Setup red checkers (Bot 1)
-                for(int column = 0;column < BoardSize;column += 1) {
-                    if(_Board[row,column] == Tile.Black) {
-                        _Board[row,column] = Tile.RedChecker;
+            for(int y = 0;y < 2;y += 1) {
+                for(int x = 0;x < BoardSize;x += 1) {
+                    if(Board(x,y) == Tile.Black) {
+                        _Board[x,y] = Tile.RedChecker;
                     }
                 }
             }
-            for(int row = BoardSize - 1;row > BoardSize - 3;row -= 1) { //Setup white checkers (Bot 2)
-                for(int column = 0;column < BoardSize;column += 1) {
-                    if(_Board[row,column] == Tile.Black) {
-                        _Board[row,column] = Tile.WhiteChecker;
+            for(int y = BoardSize-1;y > BoardSize-3;y -= 1) {
+                for(int x = 0;x < BoardSize;x += 1) {
+                    if(Board(x,y) == Tile.Black) {
+                        _Board[x,y] = Tile.WhiteChecker;
                     }
                 }
             }
-            PrintBoard();
             Bot1.Setup(1);
             Bot2.Setup(2);
+            checkerBoard = new CheckerBoard(BoardSize);
+            new Thread(RunCheckerBoard).Start();
+            checkerBoard.UpdateBoard(_Board);
         }
-        private static void PrintBoard() {
-            if(PrintBoardEnabled) {
-                for(int row = 0;row < BoardSize;row += 1) {
-                    for(int column = 0;column < BoardSize;column += 1) {
-                        Console.Write((byte)_Board[row,column]);
-                    }
-                    Console.Write(Environment.NewLine);
-                }
-            }
+        private static void RunCheckerBoard() {
+            Application.Run(checkerBoard);
         }
         private static void StartGame() {
             int turn = 1;
             int botOneInvalidMoves = 0;
             int botTwoInvalidMoves = 0;
             bool tooManyInvalidMovesReached = false;
-            while((TileExists(BotOneTiles) && TileExists(BotTwoTiles)) && !tooManyInvalidMovesReached) {
+            while(TileExists(BotOneTiles) && TileExists(BotTwoTiles) && !tooManyInvalidMovesReached) {
+                Console.ReadKey(true);
                 Move botMove = null;
                 int whoseTurn = IsOdd(turn) ? 1 : 2;
                 bool turnSkipped = false;
@@ -126,14 +126,14 @@ namespace Checkers {
                         try {
                             botMove = Bot1.Turn();
                         } catch {
-                            Console.WriteLine("Caught an exception on Bot 1's turn.");
+                            Console.WriteLine("Exception caught on Bot 1's turn.");
                         }
                         break;
                     case 2:
                         try {
                             botMove = Bot2.Turn();
                         } catch {
-                            Console.WriteLine("Caught an exception on Bot 2's turn.");
+                            Console.WriteLine("Exception caught on Bot 2's turn.");
                         }
                         break;
                 }
@@ -142,8 +142,9 @@ namespace Checkers {
                         turnSkipped = true;
                         Console.WriteLine($"Illegal move by Bot {whoseTurn}.");
                     } else {
-                        bool isKinged = _Board[botMove.Piece.X,botMove.Piece.Y] ==
-                            Tile.KingedRedChecker || _Board[botMove.Piece.X,botMove.Piece.Y] == Tile.KingedWhiteChecker ?
+                        Console.WriteLine($"Bot {whoseTurn}: {botMove.Piece.X},{botMove.Piece.Y} @ {botMove.MoveType}");
+                        bool isKinged = Board(botMove.Piece.X,botMove.Piece.Y) ==
+                            Tile.KingedRedChecker || Board(botMove.Piece.X,botMove.Piece.Y) == Tile.KingedWhiteChecker ?
                             true : false;
                         _Board[botMove.Piece.X,botMove.Piece.Y] = Tile.Black;
                         Tile replaceTile = Tile.White;
@@ -193,7 +194,20 @@ namespace Checkers {
                                 _Board[botMove.Piece.X + 2,botMove.Piece.Y + 2] = replaceTile;
                                 break;
                         }
-                        break;
+                        int y = 0;
+                        for(int x = 0;x < BoardSize;x += 1) {
+                            if(Board(x,y) == Tile.WhiteChecker) {
+                                _Board[x,y] = Tile.KingedWhiteChecker;
+                                Console.WriteLine("Bot 2 has a new king!");
+                            }
+                        }
+                        y = BoardSize - 1;
+                        for(int x = 0;x < BoardSize;x += 1) {
+                            if(Board(x,y) == Tile.RedChecker) {
+                                _Board[x,y] = Tile.KingedRedChecker;
+                                Console.WriteLine("Bot 1 has a new king!");
+                            }
+                        }
                     }
                 } else {
                     turnSkipped = true;
@@ -215,6 +229,7 @@ namespace Checkers {
                 }
                 tooManyInvalidMovesReached = botOneInvalidMoves >= MaximumSequentialInvalidMoves || botTwoInvalidMoves >= MaximumSequentialInvalidMoves;
                 turn += 1;
+                checkerBoard.UpdateBoard(_Board);
             }
             int winner;
             if(tooManyInvalidMovesReached) {
@@ -275,24 +290,32 @@ namespace Checkers {
             }
             switch(requestedMove.MoveType) {
                 case MoveType.LeftUp:
-                    if(_Board[requestedMove.Piece.X - 1,requestedMove.Piece.Y - 1] != Tile.Black) {
+                    if(Board(requestedMove.Piece.X - 1,requestedMove.Piece.Y - 1) != Tile.Black) {
                         moveValid = false;
                     }
                     break;
                 case MoveType.RightUp:
-                    if(_Board[requestedMove.Piece.X + 1,requestedMove.Piece.Y - 1] != Tile.Black) {
+                    if(Board(requestedMove.Piece.X + 1,requestedMove.Piece.Y - 1) != Tile.Black) {
                         moveValid = false;
                     }
                     break;
                 case MoveType.LeftUpJump:
-                    Tile halfWayPiece1 = _Board[requestedMove.Piece.X - 1,requestedMove.Piece.Y - 1];
-                    if(halfWayPiece1 != checkOne && halfWayPiece1 != checkTwo) {
+                    Tile halfWayPiece1 = Board(requestedMove.Piece.X - 1,requestedMove.Piece.Y - 1);
+                    if(halfWayPiece1 == checkOne || halfWayPiece1 == checkTwo) {
+                        if(Board(requestedMove.Piece.X - 2,requestedMove.Piece.Y - 2) != Tile.Black) {
+                            moveValid = false;
+                        }
+                    } else {
                         moveValid = false;
                     }
                     break;
                 case MoveType.RightUpJump:
-                    Tile halfWayPiece2 = _Board[requestedMove.Piece.X + 1,requestedMove.Piece.Y - 1];
-                    if(halfWayPiece2 != checkOne && halfWayPiece2 != checkTwo) {
+                    Tile halfWayPiece2 = Board(requestedMove.Piece.X + 1,requestedMove.Piece.Y - 1);
+                    if(halfWayPiece2 == checkOne || halfWayPiece2 == checkTwo) {
+                        if(Board(requestedMove.Piece.X + 2,requestedMove.Piece.Y - 2) != Tile.Black) {
+                            moveValid = false;
+                        }
+                    } else {
                         moveValid = false;
                     }
                     break;
@@ -318,24 +341,32 @@ namespace Checkers {
             }
             switch(requestedMove.MoveType) {
                 case MoveType.LeftDown:
-                    if(_Board[requestedMove.Piece.X - 1,requestedMove.Piece.Y + 1] != Tile.Black) {
+                    if(Board(requestedMove.Piece.X - 1,requestedMove.Piece.Y + 1) != Tile.Black) {
                         moveValid = false;
                     }
                     break;
                 case MoveType.RightDown:
-                    if(_Board[requestedMove.Piece.X + 1,requestedMove.Piece.Y + 1] != Tile.Black) {
+                    if(Board(requestedMove.Piece.X + 1,requestedMove.Piece.Y + 1) != Tile.Black) {
                         moveValid = false;
                     }
                     break;
                 case MoveType.LeftDownJump:
-                    Tile halfWayPiece1 = _Board[requestedMove.Piece.X - 1,requestedMove.Piece.Y + 1];
-                    if(halfWayPiece1 != checkOne && halfWayPiece1 != checkTwo) {
+                    Tile halfWayPiece1 = Board(requestedMove.Piece.X - 1,requestedMove.Piece.Y + 1);
+                    if(halfWayPiece1 == checkOne || halfWayPiece1 == checkTwo) {
+                        if(Board(requestedMove.Piece.X - 2,requestedMove.Piece.Y - 2) != Tile.Black) {
+                            moveValid = false;
+                        }
+                    } else {
                         moveValid = false;
                     }
                     break;
                 case MoveType.RightDownJump:
-                    Tile halfWayPiece2 = _Board[requestedMove.Piece.X + 1,requestedMove.Piece.Y + 1];
-                    if(halfWayPiece2 != checkOne && halfWayPiece2 != checkTwo) {
+                    Tile halfWayPiece2 = Board(requestedMove.Piece.X + 1,requestedMove.Piece.Y + 1);
+                    if(halfWayPiece2 == checkOne || halfWayPiece2 == checkTwo) {
+                        if(Board(requestedMove.Piece.X + 2,requestedMove.Piece.Y + 2) != Tile.Black) {
+                            moveValid = false;
+                        }
+                    } else {
                         moveValid = false;
                     }
                     break;
@@ -347,14 +378,13 @@ namespace Checkers {
         }
         public static bool VerifyMove(Move requestedMove,int botNumber) {
             bool moveValid = true;
-            try {
                 switch(botNumber) {
                     case 1:
-                        switch(_Board[requestedMove.Piece.X,requestedMove.Piece.Y]) {
-                            case Tile.WhiteChecker:
+                        switch(Board(requestedMove.Piece.X,requestedMove.Piece.Y)) {
+                            case Tile.RedChecker:
                                 moveValid = VerifyDown(requestedMove,botNumber);
                                 break;
-                            case Tile.KingedWhiteChecker:
+                            case Tile.KingedRedChecker:
                                 moveValid = VerifyDown(requestedMove,botNumber) && VerifyUp(requestedMove,botNumber);
                                 break;
                             default:
@@ -363,7 +393,7 @@ namespace Checkers {
                         }
                         break;
                     case 2:
-                        switch(_Board[requestedMove.Piece.X,requestedMove.Piece.Y]) {
+                        switch(Board(requestedMove.Piece.X,requestedMove.Piece.Y)) {
                             case Tile.WhiteChecker:
                                 moveValid = VerifyUp(requestedMove,botNumber);
                                 break;
@@ -376,22 +406,20 @@ namespace Checkers {
                         }
                         break;
                 }
-            } catch {
-                moveValid = false;
-            }
             return moveValid;
         }
         private static bool TileExists(List<Tile> tiles) {
-            bool exists = false;
-            for(int row = 0;row < BoardSize;row += 1) {
-                for(int column = 0;column < BoardSize;column += 1) {
-                    if(tiles.Contains(_Board[row,column])) {
-                        exists = true;
-                        break;
+            for(int y = 0;y < BoardSize;y += 1) {
+                for(int x = 0;x < BoardSize;x += 1) {
+                    foreach(Tile tile in tiles) {
+                        if(Board(x,y) == tile) {
+                            return true;
+                            break;
+                        }
                     }
                 }
             }
-            return exists;
+            return false;
         }
     }
 }

@@ -1,15 +1,4 @@
-﻿/*Reggie uses no uh, intelligence per say,
-he takes an extremely literal approach to checkers
-No estimating a best move
-Just the first possible move
-Because you see
-That's how Reggie rolls
-Understand?
-REGGIE WAS A TEST
-DON'T HATE ME PLZ
-i need sleep
-*/
-namespace Checkers.Bots {
+﻿namespace Checkers.Bots {
     using System.Collections.Generic;
     internal sealed class Reggie:Bot {
         private bool IsBotOne;
@@ -26,27 +15,31 @@ namespace Checkers.Bots {
         }
         public Move Turn() {
             TurnNumber += 1;
-            Location index = new Location(0,0);
-            Location indexEnd = new Location(Program.BoardSize-1,Program.BoardSize-1);
             List<MoveType> possibleMovesType = new List<MoveType>();
             List<Location> possibleMovesLocation = new List<Location>();
-            while(index != indexEnd) {
-                Location tempPiece = SelectPiece(index,indexEnd);
-                if(tempPiece == null) {
-                    return null;
-                } else {
-                    MoveType? moveType = SelectMove(tempPiece);
-                    //index = tempPiece;
+            for(int y = 0;y < Program.BoardSize;y += 1) {
+                for(int x = 0;x < Program.BoardSize;x += 1) {
+                    Location location = new Location(x,y);
+                    Tile selectedTile = Program.Board(x,y);
+                    MoveType? moveType = null;
+                    if(IsBotOne) {
+                        switch(selectedTile) {
+                            case Tile.RedChecker:
+                            case Tile.KingedRedChecker:
+                                moveType = SelectMove(location);
+                                break;
+                        }
+                    } else {
+                        switch(selectedTile) {
+                            case Tile.WhiteChecker:
+                            case Tile.KingedWhiteChecker:
+                                moveType = SelectMove(location);
+                                break;
+                        }
+                    }
                     if(moveType != null) {
                         possibleMovesType.Add((MoveType)moveType);
-                        possibleMovesLocation.Add(tempPiece);
-                    } else {
-                        if(index.X < indexEnd.X) {
-                            index.X += 1;
-                        } else if(index.Y < indexEnd.Y){
-                            index.X = 0;
-                            index.Y += 1;
-                        }
+                        possibleMovesLocation.Add(location);
                     }
                 }
             }
@@ -75,40 +68,17 @@ namespace Checkers.Bots {
             }
             return null;
         }
-        private Location SelectPiece(Location startAt,Location endAt) {
-            for(int y = startAt.Y;y < endAt.Y;y += 1) {
-                for(int x = startAt.X;x < endAt.X;x += 1) {
-                    Tile selectedTile = Program.Board(x,y);
-                    if(IsBotOne) {
-                        switch(selectedTile) {
-                            case Tile.RedChecker:
-                            case Tile.KingedRedChecker:
-                                return new Location(x,y);
-                                break;
-                        }
-                    } else {
-                        switch(selectedTile) {
-                            case Tile.WhiteChecker:
-                            case Tile.KingedWhiteChecker:
-                                return new Location(x,y);
-                                break;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
         private MoveType? SelectMove(Location piece) {
             MoveType? selectedMove = null;
             switch(Program.Board(piece.X,piece.Y)) {
                 case Tile.WhiteChecker:
-                    if((Program.Board(piece.X + 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X + 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X + 2,piece.Y + 2) == Tile.Black) {
+                    if((Program.Board(piece.X + 1,piece.Y - 1) == Tile.RedChecker || Program.Board(piece.X + 1,piece.Y - 1) == Tile.KingedRedChecker) && Program.Board(piece.X + 2,piece.Y - 2) == Tile.Black) {
                         selectedMove = MoveType.RightUpJump;
-                    } else if((Program.Board(piece.X - 1,piece.Y + 1) == Tile.RedChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedRedChecker) && Program.Board(piece.X - 2,piece.Y + 2) == Tile.Black) {
+                    } else if((Program.Board(piece.X - 1,piece.Y - 1) == Tile.RedChecker || Program.Board(piece.X - 1,piece.Y - 1) == Tile.KingedRedChecker) && Program.Board(piece.X - 2,piece.Y - 2) == Tile.Black) {
                         selectedMove = MoveType.LeftUpJump;
-                    } else if(Program.Board(piece.X - 1,piece.Y + 1) == Tile.Black) {
+                    } else if(Program.Board(piece.X - 1,piece.Y - 1) == Tile.Black) {
                         selectedMove = MoveType.LeftUp;
-                    } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
+                    } else if(Program.Board(piece.X + 1,piece.Y - 1) == Tile.Black) {
                         selectedMove = MoveType.RightUp;
                     }
                     break;
@@ -125,16 +95,20 @@ namespace Checkers.Bots {
                         selectedMove = MoveType.LeftUp;
                     } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
                         selectedMove = MoveType.RightUp;
-                    }
-                    break;
-                case Tile.RedChecker:
-                    if((Program.Board(piece.X + 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X + 1,piece.Y - 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X + 2,piece.Y - 2) == Tile.Black) {
-                        selectedMove = MoveType.RightDownJump;
-                    } else if((Program.Board(piece.X - 1,piece.Y - 1) == Tile.WhiteChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X - 2,piece.Y - 2) == Tile.Black) {
-                        selectedMove = MoveType.LeftDownJump;
                     } else if(Program.Board(piece.X - 1,piece.Y - 1) == Tile.Black) {
                         selectedMove = MoveType.LeftDown;
                     } else if(Program.Board(piece.X + 1,piece.Y - 1) == Tile.Black) {
+                        selectedMove = MoveType.RightDown;
+                    }
+                    break;
+                case Tile.RedChecker:
+                    if((Program.Board(piece.X + 1,piece.Y + 1) == Tile.WhiteChecker || Program.Board(piece.X + 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X + 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.RightDownJump;
+                    } else if((Program.Board(piece.X - 1,piece.Y + 1) == Tile.WhiteChecker || Program.Board(piece.X - 1,piece.Y + 1) == Tile.KingedWhiteChecker) && Program.Board(piece.X - 2,piece.Y + 2) == Tile.Black) {
+                        selectedMove = MoveType.LeftDownJump;
+                    } else if(Program.Board(piece.X - 1,piece.Y + 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftDown;
+                    } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
                         selectedMove = MoveType.RightDown;
                     }
                     break;
@@ -151,6 +125,10 @@ namespace Checkers.Bots {
                         selectedMove = MoveType.LeftUp;
                     } else if(Program.Board(piece.X + 1,piece.Y + 1) == Tile.Black) {
                         selectedMove = MoveType.RightUp;
+                    } else if(Program.Board(piece.X - 1,piece.Y - 1) == Tile.Black) {
+                        selectedMove = MoveType.LeftDown;
+                    } else if(Program.Board(piece.X + 1,piece.Y - 1) == Tile.Black) {
+                        selectedMove = MoveType.RightDown;
                     }
                     break;
             }
@@ -169,7 +147,7 @@ namespace Checkers.Bots {
             return "Mmmmmmmmmmmmmmmmmmmmmmm.";
         }
         public string LoseMessage() {
-            return $"I'm coming for you bot {(IsBotOne?'1':'2')}..";
+            return $"I'm coming for you bot {(IsBotOne?'2':'1')}..";
         }
     }
 }
